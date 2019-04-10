@@ -5,102 +5,102 @@ using System.Collections;
 /// <summary>
 /// Static class which emulates a mesh explosion into triangles
 /// 
-/// @autor Alex M.A.
+/// @author Alex M.A. and joshcamas
 /// </summary>
 public class MeshTriangulator
 {
-    //number of the seconds which the triangles will be destroyed
-    private static float destroySeconds = 5f;
-    //force applyed to triangles emulating an explosion
-    private static float explosionForce = 1500f;
-   
-    //mesh vars
-    private static Transform _meshTransform;
-    private static MeshFilter _meshFilter;
-    private static MeshRenderer _meshRenderer;
-    private static Mesh _mesh;
-    private static Vector3[] _v3Verts;
-    private static Vector3[] _v3Normals;
-    private static Vector2[] _v3Uvs;
-
-    //tris vars
-    private static int _intNumberOfTriangles;
-    private static int[] _intTriangles;
-    private static Vector3[] _v3TriVertexs;
-    private static Vector3[] _v3TriNormals;
-    private static Vector2[] _v3TriUvs;
-    private static Mesh _mTriMesh;
-    private static GameObject _goNewTriangle;
 
     /// <summary>
     /// Splits the mesh of the given transform into triangles deactivating
     /// its gameobject and creating multiple triangles simulating and explosion
     /// </summary>
-    /// <param name="_objTransform"></param>
-    public static void Triangulate(Transform _objTransform)
+    /// <param name="transform"></param>
+    /// <param name="explosionForce">The force applied to the generated triangles</param>
+    /// <param name="destroySeconds">How long the generated triangles will live</param>
+    public static void Triangulate(Transform transform, float explosionForce = 1500f, float destroySeconds = 5f)
     {
         //getting info about the mesh of the given transform
-        _meshTransform = _objTransform;
-        _meshFilter = _meshTransform.GetComponent<MeshFilter>();
-        _meshRenderer = _meshTransform.GetComponent<MeshRenderer>();
-        _mesh = _meshFilter.mesh;
-        _v3Verts = _mesh.vertices;
-        _v3Normals = _mesh.normals;
-        _v3Uvs = _mesh.uv;
-     
+        MeshFilter meshFilter = transform.GetComponent<MeshFilter>();
+        MeshRenderer meshRenderer = transform.GetComponent<MeshRenderer>();
+
+        Triangulate(transform, meshFilter, meshRenderer, explosionForce, destroySeconds);
+    }
+
+    /// <summary>
+    /// Splits the mesh of the given transform into triangles deactivating
+    /// its gameobject and creating multiple triangles simulating and explosion
+    /// </summary>
+    /// <param name="meshTransform"></param>
+    /// <param name="meshFilter"></param>
+    /// <param name="meshRenderer"></param>
+    /// <param name="explosionForce"></param>
+    /// <param name="destroySeconds"></param>
+    public static void Triangulate(Transform meshTransform, MeshFilter meshFilter, MeshRenderer meshRenderer,float explosionForce = 1500f, float destroySeconds = 5f)
+    {
+        Mesh mesh = meshFilter.mesh;
+        Vector3[] verts = mesh.vertices;
+        Vector3[] normals = mesh.normals;
+        Vector2[] uvs = mesh.uv;
+
         //deactivating the gameobject which is going to be splitted
-        _meshTransform.gameObject.SetActive(false);
-       
+        meshTransform.gameObject.SetActive(false);
+
         //looping the submeshes of the main mesh
-        for (int intSubmeshIndex = 0, smCount = _mesh.subMeshCount; intSubmeshIndex < smCount; intSubmeshIndex++)
+        for (int intSubmeshIndex = 0, smCount = mesh.subMeshCount; intSubmeshIndex < smCount; intSubmeshIndex++)
         {
             //getting the triangles of the submesh
-            _intTriangles = _mesh.GetTriangles(intSubmeshIndex);
+            int[] triangles = mesh.GetTriangles(intSubmeshIndex);
             //getting the number of triangles of the submesh
-            _intNumberOfTriangles = _intTriangles.Length; 
+            int numberOfTriangles = triangles.Length;
             //looping the triangles and creating the corresponding triangles
-            for (int i = 0; i < _intNumberOfTriangles; i += 3)
+            for (int i = 0; i < numberOfTriangles; i += 3)
             {
                 //init the triangles vars
-                _v3TriVertexs = new Vector3[3];
-                _v3TriNormals = new Vector3[3];
-                _v3TriUvs = new Vector2[3];
+                Vector3[] triVertexs = new Vector3[3];
+                Vector3[] triNormals = new Vector3[3];
+                Vector2[] triUvs = new Vector2[3];
 
                 //getting the vertexs, uvs and normals from the main mesh
                 for (int n = 0; n < 3; n++)
                 {
-                    int index = _intTriangles[i + n];
-                    _v3TriVertexs[n] = _v3Verts[index];
-                    _v3TriUvs[n] = _v3Uvs[index];
-                    _v3TriNormals[n] = _v3Normals[index];
+                    int index = triangles[i + n];
+                    triVertexs[n] = verts[index];
+
+                    //Sometimes UV's don't exit
+                    if(uvs.Length > n)
+                    triUvs[n] = uvs[index];
+
+                    triNormals[n] = normals[index];
                 }
 
                 //Configuring the new triangle with the info of the main mesh
-                _mTriMesh = new Mesh();
-                _mTriMesh.vertices = _v3TriVertexs;
-                _mTriMesh.normals = _v3TriNormals;
-                _mTriMesh.uv = _v3TriUvs;
-                _mTriMesh.triangles = new int[] { 0, 1, 2, 2, 1, 0};
+                Mesh triMesh = new Mesh();
+                triMesh.vertices = triVertexs;
+                triMesh.normals = triNormals;
+                triMesh.uv = triUvs;
+                triMesh.triangles = new int[] { 0, 1, 2, 2, 1, 0 };
 
                 //Creating the new triangle game object
-                _goNewTriangle = new GameObject( new StringBuilder().Append("Tiangle").Append((i / 3) + intSubmeshIndex).ToString() );
+                GameObject triangleObj = new GameObject(new StringBuilder().Append("Tiangle").Append((i / 3) + intSubmeshIndex).ToString());
                 //positioning the triangle at the same position of the original mesh
-                _goNewTriangle.transform.position = _meshTransform.position;
-                _goNewTriangle.transform.rotation = _meshTransform.rotation;
-                _goNewTriangle.transform.localScale = _meshTransform.localScale;
+                triangleObj.transform.position = meshTransform.position;
+                triangleObj.transform.rotation = meshTransform.rotation;
+                triangleObj.transform.localScale = meshTransform.localScale;
                 //adding meshrenderer and the material of the main mesh
-                _goNewTriangle.AddComponent<MeshRenderer>().material = _meshRenderer.materials[intSubmeshIndex];
+                triangleObj.AddComponent<MeshRenderer>().material = meshRenderer.materials[intSubmeshIndex];
                 //adding the triange mesh
-                _goNewTriangle.AddComponent<MeshFilter>().mesh = _mTriMesh;
+                triangleObj.AddComponent<MeshFilter>().mesh = triMesh;
                 //adding collider
-                _goNewTriangle.AddComponent<BoxCollider>();
+                triangleObj.AddComponent<BoxCollider>();
                 //adding rigidbody and a explosion
-                _goNewTriangle.AddComponent<Rigidbody>().AddExplosionForce(Random.Range(50f,explosionForce), _meshTransform.position, 30);
+                triangleObj.AddComponent<Rigidbody>().AddExplosionForce(Random.Range(50f, explosionForce), meshTransform.position, 30);
 
                 //to make clean the scene: destroy all the triangles when passed the destroySeconds
-                Object.Destroy(_goNewTriangle, destroySeconds);
+                Object.Destroy(triangleObj, destroySeconds);
             }
         }
+
     }
+
    
 }
