@@ -11,6 +11,7 @@ MeshTriangulator.Triangulate(transform,meshFilter,meshRenderer);
 
 //You can also specify the force and lifetime applied to the generated triangles 
 MeshTriangulator.Triangulate(transform,100,3)
+MeshTriangulator.Triangulate(transform,meshFilter,meshRenderer,100,3)
 ```
 
 ## Todo
