@@ -37,7 +37,7 @@ public class MeshTriangulator
     /// <param name="destroySeconds"></param>
     public static void Triangulate(Transform meshTransform, MeshFilter meshFilter, MeshRenderer meshRenderer,float explosionForce = 1500f, float destroySeconds = 5f)
     {
-        Mesh mesh = meshFilter.mesh;
+        Mesh mesh = meshFilter.sharedMesh;
         Vector3[] verts = mesh.vertices;
         Vector3[] normals = mesh.normals;
         Vector2[] uvs = mesh.uv;
@@ -87,9 +87,9 @@ public class MeshTriangulator
                 triangleObj.transform.rotation = meshTransform.rotation;
                 triangleObj.transform.localScale = meshTransform.localScale;
                 //adding meshrenderer and the material of the main mesh
-                triangleObj.AddComponent<MeshRenderer>().material = meshRenderer.materials[intSubmeshIndex];
+                triangleObj.AddComponent<MeshRenderer>().material = meshRenderer.sharedMaterials[intSubmeshIndex];
                 //adding the triange mesh
-                triangleObj.AddComponent<MeshFilter>().mesh = triMesh;
+                triangleObj.AddComponent<MeshFilter>().sharedMesh = triMesh;
                 //adding collider
                 triangleObj.AddComponent<BoxCollider>();
                 //adding rigidbody and a explosion
