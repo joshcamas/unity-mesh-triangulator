@@ -2,7 +2,7 @@
 A modified version of [alexmuab's unity-mesh-triangulator](https://github.com/alexmuab/unity-mesh-triangulator).
 
 ### Usage
-```
+```c#
 //Simplest way: finds attached MeshFilter and MeshRenderer
 MeshTriangulator.Triangulate(transform);
 
