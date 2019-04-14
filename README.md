@@ -1,6 +1,8 @@
 # unity-mesh-triangulator
 A modified version of [alexmuab's unity-mesh-triangulator](https://github.com/alexmuab/unity-mesh-triangulator).
 
+![example](https://github.com/alexmuab/unity-mesh-triangulator/blob/master/MeshTriangulator.gif)
+
 ### Usage
 ```c#
 //Simplest way: finds attached MeshFilter and MeshRenderer
